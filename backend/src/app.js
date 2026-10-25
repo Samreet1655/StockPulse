@@ -1,0 +1,14 @@
+const express = require('express'), cors = require('cors'), morgan = require('morgan');
+const app = express();
+app.use(cors({ origin: (process.env.CLIENT_URL || 'http://localhost:5173').split(',') }));
+app.use(express.json({ limit: '100kb' }));
+app.use(require('./middleware/sanitize'));
+if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
+app.get('/api/health', (req, res) => res.json({ success: true, status: 'ok' }));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/products', require('./routes/products'));
+app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/orders', require('./routes/orders'));
+app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }));
+app.use(require('./middleware/error'));
+module.exports = app;
